@@ -502,7 +502,6 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [ready, setReady] = useState(false);
-  const [showSkeletonDemo, setShowSkeletonDemo] = useState(false);
 
   const playlist: Playlist = PLAYLISTS.find((p) => p.id === playlistId) ?? PLAYLISTS[0]!;
   const trackItem: Track = playlist.tracks[index] ?? playlist.tracks[0]!;
@@ -614,36 +613,17 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
     [index, toggle],
   );
 
-  const isActuallyLoading = externalLoading || showSkeletonDemo;
-
-  if (isActuallyLoading) {
+  if (externalLoading) {
     return (
       <div className="flex w-full max-w-xl flex-col items-center gap-3">
         <PlayerSkeleton />
-        <button
-          type="button"
-          onClick={() => setShowSkeletonDemo(false)}
-          className="mt-2 rounded-full border border-accent-radio/40 bg-accent-radio/20 px-3 py-1 font-mono text-[10px] uppercase text-accent-radio backdrop-blur-md"
-        >
-          Exit Skeleton Preview
-        </button>
       </div>
     );
   }
 
   return (
     <div className="flex w-full max-w-xl flex-col gap-3">
-      <div className="flex items-center justify-between gap-2 px-1">
-        <PlaylistTabs playlists={PLAYLISTS} activeId={playlistId} onSelect={selectPlaylist} />
-        <button
-          type="button"
-          title="Toggle UI Skeleton Preview"
-          onClick={() => setShowSkeletonDemo(true)}
-          className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider text-white/50 hover:text-accent-radio hover:border-accent-radio/40 transition backdrop-blur-md shrink-0"
-        >
-          Skeleton UI
-        </button>
-      </div>
+      <PlaylistTabs playlists={PLAYLISTS} activeId={playlistId} onSelect={selectPlaylist} />
 
       {/* visible YouTube player — never hidden */}
       <div className={`overflow-hidden rounded-[22px] hidden ${GLASS} p-1.5`}>
