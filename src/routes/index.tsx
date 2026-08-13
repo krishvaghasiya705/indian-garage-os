@@ -39,11 +39,15 @@ function Index() {
         <SocialLinks />
       </div>
 
-      <header className="safe-t pointer-events-none mt-24 px-6 text-center sm:mt-28">
-        <h1 className="font-mono text-[13px] uppercase tracking-[0.4em] text-white/80 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-          Indian Garage OS
-        </h1>
-        <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-white/45">
+      <header className="safe-t pointer-events-none mt-20 px-6 text-center sm:mt-24 flex flex-col items-center justify-center">
+        <div className="flex items-center justify-center">
+          <img
+            src="/bg/logo.png"
+            alt="Indian Garage Logo"
+            className="h-auto w-44 max-w-[85vw] object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.85)] transition-all duration-300 sm:w-60 md:w-72"
+          />
+        </div>
+        <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-white/50 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] font-mono">
           90s Garage Radio · Asia/Kolkata
         </p>
       </header>
