@@ -142,3 +142,56 @@
     color: var(--color-foreground);
   }
 }
+
+/* ── Indian Garage OS — 90s Garage Radio ─────────────────────────── */
+
+:root {
+  --accent: oklch(0.78 0.16 62);
+  --accent-strong: oklch(0.7 0.18 48);
+}
+
+@theme inline {
+  --color-accent-radio: var(--accent);
+  --color-accent-radio-strong: var(--accent-strong);
+}
+
+.hero-bg {
+  background-image: url("/bg/scene-wide.png");
+}
+
+@media (orientation: portrait) {
+  .hero-bg {
+    background-image: url("/bg/scene-tall.png");
+  }
+}
+
+.grain-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  opacity: 0.3;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+.vinyl-spin {
+  animation: spin 8s linear infinite;
+}
+
+.safe-t { top: max(1rem, env(safe-area-inset-top)); }
+.safe-b { bottom: max(1rem, env(safe-area-inset-bottom)); }
+.safe-l { left: max(1rem, env(safe-area-inset-left)); }
+.safe-r { right: max(1rem, env(safe-area-inset-right)); }
