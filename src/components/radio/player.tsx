@@ -41,6 +41,12 @@ function loadYouTubeApi(): Promise<void> {
       prev?.();
       resolve();
     };
+    const checkInterval = setInterval(() => {
+      if (window.YT?.Player) {
+        clearInterval(checkInterval);
+        resolve();
+      }
+    }, 100);
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
@@ -520,9 +526,11 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
     setCurrent(0);
   }, []);
 
-  // create the player once
+  // create the player once hostRef is rendered
   useEffect(() => {
+    if (externalLoading) return;
     let cancelled = false;
+
     loadYouTubeApi().then(() => {
       if (cancelled || !hostRef.current || playerRef.current) return;
       playerRef.current = new window.YT.Player(hostRef.current, {
@@ -552,7 +560,7 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
     return () => {
       cancelled = true;
     };
-  }, [goNext]);
+  }, [externalLoading, goNext]);
 
   // load the selected track
   const firstLoad = useRef(true);
