@@ -252,15 +252,15 @@ function TimeStamp({ current, duration }: { current: number; duration: number })
 /* ────────────────────────────  the player  ─────────────────────────── */
 
 export function RadioPlayer() {
-  const [playlistId, setPlaylistId] = useState(PLAYLISTS[0].id);
+  const [playlistId, setPlaylistId] = useState(PLAYLISTS[0]!.id);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [ready, setReady] = useState(false);
 
-  const playlist = PLAYLISTS.find((p) => p.id === playlistId) ?? PLAYLISTS[0];
-  const trackItem = playlist.tracks[index] ?? playlist.tracks[0];
+  const playlist: Playlist = PLAYLISTS.find((p) => p.id === playlistId) ?? PLAYLISTS[0]!;
+  const trackItem: Track = playlist.tracks[index] ?? playlist.tracks[0]!;
 
   const playerRef = useRef<YTPlayer | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
