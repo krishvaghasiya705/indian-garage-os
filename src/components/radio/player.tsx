@@ -527,7 +527,13 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
       if (cancelled || !hostRef.current || playerRef.current) return;
       playerRef.current = new window.YT.Player(hostRef.current, {
         videoId: stateRef.current.videoId,
-        playerVars: { rel: 0, playsinline: 1, modestbranding: 1 },
+        playerVars: {
+          rel: 0,
+          playsinline: 1,
+          modestbranding: 1,
+          enablejsapi: 1,
+          origin: typeof window !== "undefined" ? window.location.origin : "",
+        },
         events: {
           onReady: () => setReady(true),
           onStateChange: (e: { data: number }) => {
@@ -554,13 +560,17 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
     const p = playerRef.current;
     if (!p || !ready) return;
     setCurrent(0);
+    if (!trackItem.videoId) {
+      goNext();
+      return;
+    }
     if (firstLoad.current) {
       firstLoad.current = false;
       p.cueVideoById(trackItem.videoId);
     } else {
       p.loadVideoById(trackItem.videoId);
     }
-  }, [trackItem.videoId, ready]);
+  }, [trackItem.videoId, ready, goNext]);
 
   // progress ticker
   useEffect(() => {
@@ -580,9 +590,16 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
   const toggle = useCallback(() => {
     const p = playerRef.current;
     if (!p) return;
-    if (stateRef.current.playing) p.pauseVideo();
-    else p.playVideo();
-  }, []);
+    if (stateRef.current.playing) {
+      p.pauseVideo();
+    } else {
+      if (!stateRef.current.videoId) {
+        goNext();
+        return;
+      }
+      p.playVideo();
+    }
+  }, [goNext]);
 
   const seek = useCallback(
     (ratio: number) => {
@@ -625,11 +642,9 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
     <div className="flex w-full max-w-xl flex-col gap-3">
       <PlaylistTabs playlists={PLAYLISTS} activeId={playlistId} onSelect={selectPlaylist} />
 
-      {/* visible YouTube player — never hidden */}
-      <div className={`overflow-hidden rounded-[22px] hidden ${GLASS} p-1.5`}>
-        <div className="aspect-video w-full overflow-hidden rounded-[16px] bg-black">
-          <div ref={hostRef} className="size-full" />
-        </div>
+      {/* YouTube iframe container — offscreen layout so audio works seamlessly across all browsers & HTTPS hosts */}
+      <div className="fixed -left-[9999px] -top-[9999px] size-1 overflow-hidden opacity-0 pointer-events-none -z-50" aria-hidden="true">
+        <div ref={hostRef} className="size-full" />
       </div>
 
       <SongList
