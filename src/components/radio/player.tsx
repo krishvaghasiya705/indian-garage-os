@@ -508,6 +508,7 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [ready, setReady] = useState(false);
+  const [showVideo, setShowVideo] = useState(true);
 
   const playlist: Playlist = PLAYLISTS.find((p) => p.id === playlistId) ?? PLAYLISTS[0]!;
   const trackItem: Track = playlist.tracks[index] ?? playlist.tracks[0]!;
@@ -650,23 +651,46 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
     <div className="flex w-full max-w-xl flex-col gap-3">
       <PlaylistTabs playlists={PLAYLISTS} activeId={playlistId} onSelect={selectPlaylist} />
 
-      {/* 90s Garage TV — Music Video Deck (Visible embed required for live YouTube API HTTPS playback) */}
-      <div className={`w-full overflow-hidden rounded-[26px] ${GLASS} p-2.5 animate-fade-in-up [animation-delay:100ms]`}>
-        <div className="flex items-center justify-between px-2 pb-1.5 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-accent-radio animate-pulse shadow-[0_0_8px_var(--accent)]" />
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] font-semibold text-white/90">
-              90s Garage TV · Video Stream
-            </span>
+      {/* 90s Garage TV — Music Video Deck with Show / Hide Video Toggle */}
+      {showVideo ? (
+        <div className={`w-full overflow-hidden rounded-[26px] ${GLASS} p-2.5 animate-fade-in-up [animation-delay:100ms]`}>
+          <div className="flex items-center justify-between px-2 pb-1.5 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-accent-radio animate-pulse shadow-[0_0_8px_var(--accent)]" />
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] font-semibold text-white/90">
+                90s Garage TV · Video Stream
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowVideo(false)}
+              className="rounded-full border border-white/10 bg-black/30 px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-wider text-white/70 hover:text-white hover:border-white/30 transition cursor-pointer"
+            >
+              Hide Video
+            </button>
           </div>
-          <span className="font-mono text-[9.5px] uppercase tracking-widest text-accent-radio/80 border border-accent-radio/30 bg-accent-radio/10 px-2 py-0.5 rounded-full">
-            LIVE BROADCAST
-          </span>
+          <div className="aspect-video w-full overflow-hidden rounded-[18px] bg-black mt-2 shadow-2xl relative border border-white/10">
+            <div ref={hostRef} className="size-full" />
+          </div>
         </div>
-        <div className="aspect-video w-full overflow-hidden rounded-[18px] bg-black mt-2 shadow-2xl relative border border-white/10">
-          <div ref={hostRef} className="size-full" />
-        </div>
-      </div>
+      ) : (
+        <>
+          <div className="flex justify-end px-1">
+            <button
+              type="button"
+              onClick={() => setShowVideo(true)}
+              className="rounded-full border border-accent-radio/40 bg-accent-radio/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-accent-radio/25 hover:border-accent-radio transition backdrop-blur-md cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(251,191,36,0.25)] animate-fade-in-up"
+            >
+              <span>📺 SHOW VIDEO</span>
+            </button>
+          </div>
+
+          {/* Offscreen YT host element preserved when video is hidden so audio playback continues smoothly */}
+          <div className="fixed -left-[9999px] -top-[9999px] size-1 overflow-hidden opacity-0 pointer-events-none -z-50" aria-hidden="true">
+            <div ref={hostRef} className="size-full" />
+          </div>
+        </>
+      )}
 
       <SongList
         tracks={playlist.tracks}
