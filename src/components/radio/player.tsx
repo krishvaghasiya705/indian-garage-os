@@ -651,45 +651,44 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
     <div className="flex w-full max-w-xl flex-col gap-3">
       <PlaylistTabs playlists={PLAYLISTS} activeId={playlistId} onSelect={selectPlaylist} />
 
-      {/* 90s Garage TV — Music Video Deck with Show / Hide Video Toggle */}
-      {showVideo ? (
-        <div className={`w-full overflow-hidden rounded-[26px] ${GLASS} p-2.5 animate-fade-in-up [animation-delay:100ms]`}>
-          <div className="flex items-center justify-between px-2 pb-1.5 border-b border-white/10">
-            <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-accent-radio animate-pulse shadow-[0_0_8px_var(--accent)]" />
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] font-semibold text-white/90">
-                90s Garage TV · Video Stream
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowVideo(false)}
-              className="rounded-full border border-white/10 bg-black/30 px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-wider text-white/70 hover:text-white hover:border-white/30 transition cursor-pointer"
-            >
-              Hide Video
-            </button>
+      {/* 90s Garage TV — Music Video Deck with Persistent DOM hostRef */}
+      <div
+        className={`w-full overflow-hidden rounded-[26px] ${GLASS} transition-all duration-500 ease-in-out ${
+          showVideo
+            ? "max-h-[500px] p-2.5 opacity-100 animate-fade-in-up"
+            : "max-h-0 p-0 m-0 border-none opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="flex items-center justify-between px-2 pb-1.5 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <span className="size-2 rounded-full bg-accent-radio animate-pulse shadow-[0_0_8px_var(--accent)]" />
+            <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] font-semibold text-white/90">
+              90s Garage TV · Video Stream
+            </span>
           </div>
-          <div className="aspect-video w-full overflow-hidden rounded-[18px] bg-black mt-2 shadow-2xl relative border border-white/10">
-            <div ref={hostRef} className="size-full" />
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowVideo(false)}
+            className="rounded-full border border-white/10 bg-black/30 px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-wider text-white/70 hover:text-white hover:border-white/30 transition cursor-pointer"
+          >
+            Hide Video
+          </button>
         </div>
-      ) : (
-        <>
-          <div className="flex justify-end px-1">
-            <button
-              type="button"
-              onClick={() => setShowVideo(true)}
-              className="rounded-full border border-accent-radio/40 bg-accent-radio/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-accent-radio/25 hover:border-accent-radio transition backdrop-blur-md cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(251,191,36,0.25)] animate-fade-in-up"
-            >
-              <span>📺 SHOW VIDEO</span>
-            </button>
-          </div>
+        <div className="aspect-video w-full overflow-hidden rounded-[18px] bg-black mt-2 shadow-2xl relative border border-white/10">
+          <div ref={hostRef} className="size-full" />
+        </div>
+      </div>
 
-          {/* Offscreen YT host element preserved when video is hidden so audio playback continues smoothly */}
-          <div className="fixed -left-[9999px] -top-[9999px] size-1 overflow-hidden opacity-0 pointer-events-none -z-50" aria-hidden="true">
-            <div ref={hostRef} className="size-full" />
-          </div>
-        </>
+      {!showVideo && (
+        <div className="flex justify-end px-1 animate-fade-in-up">
+          <button
+            type="button"
+            onClick={() => setShowVideo(true)}
+            className="rounded-full border border-accent-radio/40 bg-accent-radio/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-accent-radio/25 hover:border-accent-radio transition backdrop-blur-md cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(251,191,36,0.25)]"
+          >
+            <span>📺 SHOW VIDEO</span>
+          </button>
+        </div>
       )}
 
       <SongList
