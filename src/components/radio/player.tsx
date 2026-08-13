@@ -642,9 +642,22 @@ export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerPro
     <div className="flex w-full max-w-xl flex-col gap-3">
       <PlaylistTabs playlists={PLAYLISTS} activeId={playlistId} onSelect={selectPlaylist} />
 
-      {/* YouTube iframe container — offscreen layout so audio works seamlessly across all browsers & HTTPS hosts */}
-      <div className="fixed -left-[9999px] -top-[9999px] size-1 overflow-hidden opacity-0 pointer-events-none -z-50" aria-hidden="true">
-        <div ref={hostRef} className="size-full" />
+      {/* 90s Garage TV — Music Video Deck (Visible embed required for live YouTube API HTTPS playback) */}
+      <div className={`w-full overflow-hidden rounded-[26px] ${GLASS} p-2.5 animate-fade-in-up [animation-delay:100ms]`}>
+        <div className="flex items-center justify-between px-2 pb-1.5 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <span className="size-2 rounded-full bg-accent-radio animate-pulse shadow-[0_0_8px_var(--accent)]" />
+            <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] font-semibold text-white/90">
+              90s Garage TV · Video Stream
+            </span>
+          </div>
+          <span className="font-mono text-[9.5px] uppercase tracking-widest text-accent-radio/80 border border-accent-radio/30 bg-accent-radio/10 px-2 py-0.5 rounded-full">
+            LIVE BROADCAST
+          </span>
+        </div>
+        <div className="aspect-video w-full overflow-hidden rounded-[18px] bg-black mt-2 shadow-2xl relative border border-white/10">
+          <div ref={hostRef} className="size-full" />
+        </div>
       </div>
 
       <SongList
