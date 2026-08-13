@@ -1,19 +1,26 @@
 {
   "name": "Indian Garage OS — 90s Garage Radio",
   "short_name": "Indian Garage",
+  "description": "A 90s Indian garage radio: Bollywood and Indipop classics playing in a retro glass player over a roadside garage.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#000000",
+  "theme_color": "#fbbf24",
+  "categories": ["music", "entertainment"],
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ],
-  "theme_color": "#000000",
-  "background_color": "#000000",
-  "display": "standalone"
+  ]
 }

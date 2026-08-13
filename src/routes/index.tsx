@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { RadioPlayer } from "@/components/radio/player";
 import { Clock, ListenerCount, SocialLinks } from "@/components/radio/top-bar";
 import { SiteLoader } from "@/components/ui/site-loader";
-import { Skeleton, TextSkeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { InstallPwaButton } from "@/components/ui/install-pwa";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -72,10 +73,13 @@ function Index() {
         {/* Top bar header */}
         <div className="safe-t safe-l safe-r fixed z-10 flex items-start justify-between gap-4">
           <Clock loading={siteLoading} />
-          <div className="hidden sm:block">
+          <div className="hidden sm:flex items-center gap-2">
             <ListenerCount loading={siteLoading} />
           </div>
-          <SocialLinks loading={siteLoading} />
+          <div className="flex items-center gap-2">
+            <InstallPwaButton loading={siteLoading} />
+            <SocialLinks loading={siteLoading} />
+          </div>
         </div>
 
         {/* Center Logo Header */}
