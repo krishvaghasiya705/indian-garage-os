@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Skeleton, ButtonSkeleton } from "@/components/ui/skeleton";
 
 const fmt = new Intl.DateTimeFormat("en-IN", {
   timeZone: "Asia/Kolkata",
@@ -7,7 +8,7 @@ const fmt = new Intl.DateTimeFormat("en-IN", {
   hour12: true,
 });
 
-export function Clock() {
+export function Clock({ loading = false }: { loading?: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -16,13 +17,22 @@ export function Clock() {
     return () => clearInterval(t);
   }, []);
 
-  const parts = now ? fmt.formatToParts(now) : [];
+  if (loading || !now) {
+    return (
+      <div className="flex flex-col gap-1 pointer-events-none select-none">
+        <Skeleton className="h-4 w-20 rounded-full bg-white/20" />
+        <Skeleton className="h-2.5 w-10 rounded-full bg-white/10" />
+      </div>
+    );
+  }
+
+  const parts = fmt.formatToParts(now);
   const hour = parts.find((p) => p.type === "hour")?.value ?? "--";
   const minute = parts.find((p) => p.type === "minute")?.value ?? "--";
   const period = parts.find((p) => p.type === "dayPeriod")?.value ?? "";
 
   return (
-    <div className="pointer-events-none select-none font-mono text-[13px] tabular-nums tracking-widest text-white/85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+    <div className="pointer-events-none select-none font-mono text-[13px] tabular-nums tracking-widest text-white/85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-fade-in-up">
       <span>{hour}</span>
       <span className="animate-blink">:</span>
       <span>{minute}</span>
@@ -32,7 +42,7 @@ export function Clock() {
   );
 }
 
-export function ListenerCount() {
+export function ListenerCount({ loading = false }: { loading?: boolean }) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -40,16 +50,25 @@ export function ListenerCount() {
     setCount(base);
     const t = setInterval(
       () => setCount((c) => Math.max(120, c + Math.floor(Math.random() * 9) - 4)),
-      4000,
+      4000
     );
     return () => clearInterval(t);
   }, []);
 
+  if (loading || count === 0) {
+    return (
+      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/25 px-3 py-1.5 backdrop-blur-md">
+        <Skeleton className="size-2 rounded-full bg-accent-radio/50" />
+        <Skeleton className="h-3 w-24 rounded-full bg-white/20" />
+      </div>
+    );
+  }
+
   return (
-    <div className="pointer-events-none flex items-center gap-2 rounded-full border border-white/10 bg-black/25 px-3 py-1.5 backdrop-blur-md">
+    <div className="pointer-events-none flex items-center gap-2 rounded-full border border-white/10 bg-black/25 px-3 py-1.5 backdrop-blur-md animate-fade-in-up [animation-delay:150ms]">
       <span className="size-1.5 animate-pulse rounded-full bg-accent-radio shadow-[0_0_8px_var(--accent)]" />
       <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-white/70 tabular-nums">
-        {count || "—"} listening
+        {count} listening
       </span>
     </div>
   );
@@ -73,9 +92,19 @@ const SOCIALS: { label: string; href: string; d: string }[] = [
   },
 ];
 
-export function SocialLinks() {
+export function SocialLinks({ loading = false }: { loading?: boolean }) {
+  if (loading) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <ButtonSkeleton variant="circle" className="size-9" />
+        <ButtonSkeleton variant="circle" className="size-9" />
+        <ButtonSkeleton variant="circle" className="size-9" />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1.5 animate-fade-in-up [animation-delay:250ms]">
       {SOCIALS.map((s) => (
         <a
           key={s.label}

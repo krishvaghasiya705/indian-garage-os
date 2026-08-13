@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PLAYLISTS, formatTime, type Playlist, type Track } from "@/lib/radio-data";
+import { PlayerSkeleton, VinylSkeleton, Skeleton, TextSkeleton } from "@/components/ui/skeleton";
 
 /* ────────────────────────────  analytics  ──────────────────────────── */
 
@@ -52,15 +53,19 @@ function loadYouTubeApi(): Promise<void> {
 const GLASS =
   "border border-white/10 bg-gradient-to-b from-white/[0.15] to-white/[0.055] backdrop-blur-3xl backdrop-saturate-[1.7] shadow-[0_16px_48px_-12px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.2)]";
 
-function Vinyl({ size, playing }: { size: number; playing: boolean }) {
+function Vinyl({ size, playing, loading }: { size: number; playing: boolean; loading?: boolean }) {
+  if (loading) {
+    return <VinylSkeleton size={size} />;
+  }
+
   return (
     <div
-      className="relative shrink-0 self-start overflow-hidden rounded-full ring-1 ring-white/15"
+      className="relative shrink-0 self-start overflow-hidden rounded-full ring-1 ring-white/15 animate-scale-in"
       style={{ width: size, height: size }}
     >
       <img
         src="/bg/vinyl.png"
-        alt=""
+        alt="Vinyl Record"
         width={size}
         height={size}
         className="vinyl-spin size-full object-cover"
@@ -74,9 +79,11 @@ function Vinyl({ size, playing }: { size: number; playing: boolean }) {
 function SeekBar({
   progress,
   onSeek,
+  loading = false,
 }: {
   progress: number;
   onSeek: (ratio: number) => void;
+  loading?: boolean;
 }) {
   const railRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
@@ -101,6 +108,14 @@ function SeekBar({
       window.removeEventListener("pointerup", up);
     };
   }, [emit]);
+
+  if (loading) {
+    return (
+      <div className="h-6 w-full flex items-center">
+        <Skeleton className="h-[3px] w-full rounded-full bg-white/20" />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -184,7 +199,7 @@ function Transport({
         type="button"
         aria-label={playing ? "Pause" : "Play"}
         onClick={onToggle}
-        className="flex items-center justify-center rounded-full bg-gradient-to-b from-accent-radio to-accent-radio-strong text-black ring-1 ring-white/25 shadow-[0_8px_24px_-6px_var(--accent)] transition active:scale-95"
+        className="flex items-center justify-center rounded-full bg-gradient-to-b from-accent-radio to-accent-radio-strong text-black ring-1 ring-white/25 shadow-[0_8px_24px_-6px_var(--accent)] transition active:scale-95 hover:scale-105"
         style={{ width: size >= 44 ? 52 : 40, height: size >= 44 ? 52 : 40 }}
       >
         {playing ? <IconPause /> : <IconPlay />}
@@ -206,16 +221,16 @@ function PlaylistTabs({
   onSelect: (id: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-1.5">
+    <div className="flex flex-wrap items-center justify-center gap-1.5 animate-fade-in-up">
       {playlists.map((p) => (
         <button
           key={p.id}
           type="button"
           onClick={() => onSelect(p.id)}
-          className={`rounded-full border px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] backdrop-blur-md transition ${
+          className={`rounded-full border px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] backdrop-blur-md transition-all duration-200 cursor-pointer ${
             p.id === activeId
-              ? "border-accent-radio/60 bg-accent-radio/20 text-white"
-              : "border-white/10 bg-black/25 text-white/55 hover:text-white"
+              ? "border-accent-radio/60 bg-accent-radio/20 text-white shadow-[0_0_12px_rgba(251,191,36,0.3)] scale-105"
+              : "border-white/10 bg-black/25 text-white/55 hover:border-white/30 hover:text-white"
           }`}
         >
           {p.name}
@@ -281,11 +296,17 @@ function Meta({
   track: t,
   size,
   playing,
+  loading = false,
 }: {
   track: Track;
   size: "sm" | "md";
   playing?: boolean;
+  loading?: boolean;
 }) {
+  if (loading) {
+    return <TextSkeleton lines={2} className="min-w-0 flex-1" />;
+  }
+
   const subtext = `${t.artist} · ${t.film} (${t.year})`;
 
   return (
@@ -334,7 +355,11 @@ function EqualizerVisualizer({ playing }: { playing: boolean }) {
   );
 }
 
-function TimeStamp({ current, duration }: { current: number; duration: number }) {
+function TimeStamp({ current, duration, loading = false }: { current: number; duration: number; loading?: boolean }) {
+  if (loading) {
+    return <Skeleton className="h-3 w-16 rounded-full bg-white/20 shrink-0" />;
+  }
+
   return (
     <div className="shrink-0 font-mono text-[10.5px] tabular-nums text-white/60">
       {formatTime(current)} / {formatTime(duration)}
@@ -348,15 +373,17 @@ function SongList({
   isPlaying,
   onSelectTrack,
   playlistTagline,
+  loading = false,
 }: {
   tracks: Track[];
   currentIndex: number;
   isPlaying: boolean;
   onSelectTrack: (index: number) => void;
   playlistTagline?: string;
+  loading?: boolean;
 }) {
   return (
-    <div className={`w-full flex flex-col gap-2.5 rounded-[26px] p-3 sm:p-4 ${GLASS}`}>
+    <div className={`w-full flex flex-col gap-2.5 rounded-[26px] p-3 sm:p-4 ${GLASS} animate-fade-in-up [animation-delay:150ms]`}>
       {/* Header section */}
       <div className="flex items-center justify-between px-1.5 pb-2 border-b border-white/10">
         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -381,73 +408,82 @@ function SongList({
 
       {/* Song list scroll area */}
       <div className="max-h-56 sm:max-h-64 overflow-y-auto pr-1 flex flex-col gap-1.5 custom-scrollbar">
-        {tracks.map((t, idx) => {
-          const isActive = idx === currentIndex;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => onSelectTrack(idx)}
-              className={`group relative flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 border cursor-pointer ${
-                isActive
-                  ? "border-accent-radio/50 bg-gradient-to-r from-accent-radio/25 via-accent-radio/10 to-white/[0.02] text-white shadow-[0_4px_20px_-4px_rgba(251,191,36,0.25)]"
-                  : "border-white/5 bg-black/20 text-white/70 hover:border-white/20 hover:bg-white/[0.08] hover:text-white hover:shadow-md hover:translate-x-0.5"
-              }`}
-            >
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                {/* Track Number / Visualizer / Play Action */}
-                <div
-                  className={`flex size-7 shrink-0 items-center justify-center rounded-lg font-mono text-xs transition-all ${
-                    isActive
-                      ? "bg-accent-radio/20 text-accent-radio ring-1 ring-accent-radio/40"
-                      : "bg-white/5 text-white/40 group-hover:bg-accent-radio group-hover:text-black group-hover:shadow-[0_0_12px_var(--accent)]"
-                  }`}
-                >
-                  {isActive ? (
-                    <EqualizerVisualizer playing={isPlaying} />
-                  ) : (
-                    <>
-                      <span className="group-hover:hidden">{String(idx + 1).padStart(2, "0")}</span>
-                      <IconPlay className="hidden size-3.5 fill-current group-hover:block" />
-                    </>
-                  )}
-                </div>
-
-                {/* Track Details */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`truncate font-medium text-xs sm:text-sm transition-colors ${
-                        isActive
-                          ? "text-white font-semibold"
-                          : "text-white/85 group-hover:text-white"
-                      }`}
-                    >
-                      {t.title}
-                    </span>
-                    {isActive && (
-                      <span className="shrink-0 rounded-full bg-accent-radio/25 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider text-accent-radio border border-accent-radio/40">
-                        {isPlaying ? "PLAYING" : "PAUSED"}
-                      </span>
-                    )}
-                  </div>
-                  <div className="truncate text-[11px] text-white/50 group-hover:text-white/75 transition-colors">
-                    {t.artist} · <span className="italic text-white/60">{t.film}</span> ({t.year})
-                  </div>
-                </div>
-              </div>
-
-              {/* Track Duration */}
-              <div
-                className={`shrink-0 font-mono text-[11px] tabular-nums transition-colors ${
-                  isActive ? "text-accent-radio font-medium" : "text-white/45 group-hover:text-white/80"
+        {loading ? (
+          <>
+            <Skeleton className="h-11 w-full rounded-xl bg-white/10" />
+            <Skeleton className="h-11 w-full rounded-xl bg-white/10" />
+            <Skeleton className="h-11 w-full rounded-xl bg-white/10" />
+            <Skeleton className="h-11 w-full rounded-xl bg-white/10" />
+          </>
+        ) : (
+          tracks.map((t, idx) => {
+            const isActive = idx === currentIndex;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => onSelectTrack(idx)}
+                className={`group relative flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 border cursor-pointer ${
+                  isActive
+                    ? "border-accent-radio/50 bg-gradient-to-r from-accent-radio/25 via-accent-radio/10 to-white/[0.02] text-white shadow-[0_4px_20px_-4px_rgba(251,191,36,0.25)]"
+                    : "border-white/5 bg-black/20 text-white/70 hover:border-white/20 hover:bg-white/[0.08] hover:text-white hover:shadow-md hover:translate-x-0.5"
                 }`}
               >
-                {formatTime(t.duration)}
-              </div>
-            </button>
-          );
-        })}
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  {/* Track Number / Visualizer / Play Action */}
+                  <div
+                    className={`flex size-7 shrink-0 items-center justify-center rounded-lg font-mono text-xs transition-all ${
+                      isActive
+                        ? "bg-accent-radio/20 text-accent-radio ring-1 ring-accent-radio/40"
+                        : "bg-white/5 text-white/40 group-hover:bg-accent-radio group-hover:text-black group-hover:shadow-[0_0_12px_var(--accent)]"
+                    }`}
+                  >
+                    {isActive ? (
+                      <EqualizerVisualizer playing={isPlaying} />
+                    ) : (
+                      <>
+                        <span className="group-hover:hidden">{String(idx + 1).padStart(2, "0")}</span>
+                        <IconPlay className="hidden size-3.5 fill-current group-hover:block" />
+                      </>
+                    )}
+                  </div>
+
+                  {/* Track Details */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`truncate font-medium text-xs sm:text-sm transition-colors ${
+                          isActive
+                            ? "text-white font-semibold"
+                            : "text-white/85 group-hover:text-white"
+                        }`}
+                      >
+                        {t.title}
+                      </span>
+                      {isActive && (
+                        <span className="shrink-0 rounded-full bg-accent-radio/25 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider text-accent-radio border border-accent-radio/40">
+                          {isPlaying ? "PLAYING" : "PAUSED"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="truncate text-[11px] text-white/50 group-hover:text-white/75 transition-colors">
+                      {t.artist} · <span className="italic text-white/60">{t.film}</span> ({t.year})
+                    </div>
+                  </div>
+                </div>
+
+                {/* Track Duration */}
+                <div
+                  className={`shrink-0 font-mono text-[11px] tabular-nums transition-colors ${
+                    isActive ? "text-accent-radio font-medium" : "text-white/45 group-hover:text-white/80"
+                  }`}
+                >
+                  {formatTime(t.duration)}
+                </div>
+              </button>
+            );
+          })
+        )}
       </div>
     </div>
   );
@@ -455,13 +491,18 @@ function SongList({
 
 /* ────────────────────────────  the player  ─────────────────────────── */
 
-export function RadioPlayer() {
+interface RadioPlayerProps {
+  loading?: boolean;
+}
+
+export function RadioPlayer({ loading: externalLoading = false }: RadioPlayerProps) {
   const [playlistId, setPlaylistId] = useState(PLAYLISTS[0]!.id);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [ready, setReady] = useState(false);
+  const [showSkeletonDemo, setShowSkeletonDemo] = useState(false);
 
   const playlist: Playlist = PLAYLISTS.find((p) => p.id === playlistId) ?? PLAYLISTS[0]!;
   const trackItem: Track = playlist.tracks[index] ?? playlist.tracks[0]!;
@@ -573,9 +614,36 @@ export function RadioPlayer() {
     [index, toggle],
   );
 
+  const isActuallyLoading = externalLoading || showSkeletonDemo;
+
+  if (isActuallyLoading) {
+    return (
+      <div className="flex w-full max-w-xl flex-col items-center gap-3">
+        <PlayerSkeleton />
+        <button
+          type="button"
+          onClick={() => setShowSkeletonDemo(false)}
+          className="mt-2 rounded-full border border-accent-radio/40 bg-accent-radio/20 px-3 py-1 font-mono text-[10px] uppercase text-accent-radio backdrop-blur-md"
+        >
+          Exit Skeleton Preview
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-full max-w-xl flex-col gap-3">
-      <PlaylistTabs playlists={PLAYLISTS} activeId={playlistId} onSelect={selectPlaylist} />
+      <div className="flex items-center justify-between gap-2 px-1">
+        <PlaylistTabs playlists={PLAYLISTS} activeId={playlistId} onSelect={selectPlaylist} />
+        <button
+          type="button"
+          title="Toggle UI Skeleton Preview"
+          onClick={() => setShowSkeletonDemo(true)}
+          className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider text-white/50 hover:text-accent-radio hover:border-accent-radio/40 transition backdrop-blur-md shrink-0"
+        >
+          Skeleton UI
+        </button>
+      </div>
 
       {/* visible YouTube player — never hidden */}
       <div className={`overflow-hidden rounded-[22px] hidden ${GLASS} p-1.5`}>
@@ -593,8 +661,7 @@ export function RadioPlayer() {
       />
 
       {/* DESKTOP pill */}
-
-      <div className={`hidden w-full items-center gap-4 rounded-full p-3 pr-5 sm:flex ${GLASS}`}>
+      <div className={`hidden w-full items-center gap-4 rounded-full p-3 pr-5 sm:flex ${GLASS} animate-fade-in-up [animation-delay:300ms]`}>
         <Vinyl size={80} playing={playing} />
         <div className="min-w-0 flex-1">
           <Meta track={trackItem} size="md" playing={playing} />
@@ -605,7 +672,7 @@ export function RadioPlayer() {
       </div>
 
       {/* MOBILE card */}
-      <div className={`flex w-full flex-col gap-3 rounded-[26px] p-4 sm:hidden ${GLASS}`}>
+      <div className={`flex w-full flex-col gap-3 rounded-[26px] p-4 sm:hidden ${GLASS} animate-fade-in-up [animation-delay:300ms]`}>
         <div className="flex items-center gap-3">
           <Vinyl size={64} playing={playing} />
           <Meta track={trackItem} size="sm" playing={playing} />

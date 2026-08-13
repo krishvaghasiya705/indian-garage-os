@@ -1,6 +1,9 @@
+import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { RadioPlayer } from "@/components/radio/player";
 import { Clock, ListenerCount, SocialLinks } from "@/components/radio/top-bar";
+import { SiteLoader } from "@/components/ui/site-loader";
+import { Skeleton, TextSkeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,37 +27,85 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const [siteLoading, setSiteLoading] = useState(true);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [bgLoaded, setBgLoaded] = useState(false);
+
+  // Preload background image
+  useEffect(() => {
+    const bgImg = new Image();
+    bgImg.src = "/bg/scene-wide.png";
+    bgImg.onload = () => setBgLoaded(true);
+    bgImg.onerror = () => setBgLoaded(true);
+
+    const logoImg = new Image();
+    logoImg.src = "/bg/logo.png";
+    logoImg.onload = () => setLogoLoaded(true);
+    logoImg.onerror = () => setLogoLoaded(true);
+
+    // Ensure loader shows for initial tuning experience (1.6 seconds minimum)
+    const minLoaderTimer = setTimeout(() => {
+      setSiteLoading(false);
+    }, 1600);
+
+    return () => clearTimeout(minLoaderTimer);
+  }, []);
+
   return (
-    <main className="relative flex min-h-dvh flex-1 flex-col items-center justify-between overflow-hidden">
-      <div className="hero-bg fixed inset-0 -z-20 bg-cover bg-center">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/80" />
-      </div>
-      <div className="grain-overlay pointer-events-none fixed inset-0 -z-10" />
+    <>
+      <SiteLoader isLoading={siteLoading} />
 
-      <div className="safe-t safe-l safe-r fixed z-10 flex items-start justify-between gap-4">
-        <Clock />
-        <div className="hidden sm:block">
-          <ListenerCount />
+      <main className="relative flex min-h-dvh flex-1 flex-col items-center justify-between overflow-hidden">
+        {/* Background & Overlay */}
+        {!bgLoaded && (
+          <div className="fixed inset-0 -z-20 bg-zinc-950 animate-pulse animate-shimmer" />
+        )}
+        <div
+          className={`hero-bg fixed inset-0 -z-20 bg-cover bg-center transition-opacity duration-700 ${
+            bgLoaded ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/80" />
         </div>
-        <SocialLinks />
-      </div>
+        <div className="grain-overlay pointer-events-none fixed inset-0 -z-10" />
 
-      <header className="safe-t pointer-events-none mt-20 px-6 text-center sm:mt-24 flex flex-col items-center justify-center">
-        <div className="flex items-center justify-center">
-          <img
-            src="/bg/logo.png"
-            alt="Indian Garage Logo"
-            className="h-auto w-44 max-w-[85vw] object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.85)] transition-all duration-300 sm:w-60 md:w-72"
-          />
+        {/* Top bar header */}
+        <div className="safe-t safe-l safe-r fixed z-10 flex items-start justify-between gap-4">
+          <Clock loading={siteLoading} />
+          <div className="hidden sm:block">
+            <ListenerCount loading={siteLoading} />
+          </div>
+          <SocialLinks loading={siteLoading} />
         </div>
-        <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-white/50 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] font-mono">
-          90s Garage Radio · Asia/Kolkata
-        </p>
-      </header>
 
-      <div className="safe-b z-10 flex w-full justify-center px-4 pb-4 pt-10">
-        <RadioPlayer />
-      </div>
-    </main>
+        {/* Center Logo Header */}
+        <header className="safe-t pointer-events-none mt-20 px-6 text-center sm:mt-24 flex flex-col items-center justify-center animate-fade-in-up [animation-delay:100ms]">
+          <div className="flex items-center justify-center">
+            {!logoLoaded || siteLoading ? (
+              <div className="flex flex-col items-center gap-2 py-4">
+                <Skeleton className="h-14 w-52 sm:w-72 rounded-2xl bg-white/20" />
+                <Skeleton className="h-3 w-40 rounded-full bg-white/10" />
+              </div>
+            ) : (
+              <img
+                src="/bg/logo.png"
+                alt="Indian Garage Logo"
+                className="h-auto w-44 max-w-[85vw] object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.85)] transition-all duration-300 sm:w-60 md:w-72 animate-scale-in"
+              />
+            )}
+          </div>
+          {logoLoaded && !siteLoading && (
+            <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-white/50 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] font-mono animate-fade-in-up [animation-delay:200ms]">
+              90s Garage Radio · Asia/Kolkata
+            </p>
+          )}
+        </header>
+
+        {/* Player Section */}
+        <div className="safe-b z-10 flex w-full justify-center px-4 pb-4 pt-10">
+          <RadioPlayer loading={siteLoading} />
+        </div>
+      </main>
+    </>
   );
 }
